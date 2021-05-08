@@ -1,0 +1,50 @@
+#!/bin/sh
+
+Uncloze() {
+  sed "s/{{[0-$1]:\([^}]*\)}}/\1/g" | sed 's/{{[0-9]*:[^}]*}}/.../g'
+}
+
+Wait() {
+  old_stty_cfg=$(stty -g)
+  stty raw -echo
+  answer=$( while ! head -c 1 ;do true ;done )
+  stty $old_stty_cfg
+}
+
+DECK="$(cat $1)"
+CARDIDS="$(mnmapkeys $1)"
+
+for CARDID in $CARDIDS
+do
+  CARD="$(printf '%s\n' "$DECK" | mnmapget $CARDID)"
+  if [ "$(printf '%s\n' "$CARD" | mnmapget cloze)" ];
+  then
+    # Cloze Card
+    clear
+    # TODO: This is the same as in the condition
+    CONTENT="$(printf '%s\n' "$CARD" | mnmapget cloze)"
+    for STEP in 0 1 2 3 4 5 6 7 8 9
+    do
+      clear
+      printf '%s\n' "$CONTENT" | Uncloze $STEP
+      Wait
+
+      # If another level of uncloze doesn't change the result
+      # The last step has been reached
+      [ "$(printf "%s\n" "$CONTENT" | Uncloze $STEP)" \
+        = "$(printf '%s\n' "$CONTENT" | Uncloze $(expr $STEP + 1))" ] \
+        && break
+    done
+  else
+    # QA Card
+    clear
+    QUESTION="$(printf '%s\n' "$CARD" | mnmapget qstn)"
+    ANSWER="$(printf '%s\n' "$CARD" | mnmapget answ)"
+    printf '%s\n' "$QUESTION"
+    Wait
+    printf '%s\n' "$ANSWER"
+    Wait
+  fi
+done
+clear
+

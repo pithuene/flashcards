@@ -1,0 +1,10 @@
+123:
+  qstn: What kind of card is this?
+  answ: A question / answer card.
+456:
+  cloze:
+    Some text with {{1:blanks}}.
+    Blanks are marked with {{2:double curly braces}}.
+    The first first two letters inside the {{2:curly braces}} specify {{3:the increment}}.
+    The text after the colon is the {{4:content}}.
+    This example would be uncovered in {{5:five}} steps.
